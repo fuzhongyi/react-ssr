@@ -1,41 +1,63 @@
 import React, {Component} from "react";
-import styled from 'styled-components';
 import {connect} from "react-redux";
-import {List, Popconfirm, Button} from 'antd';
-import {actionDelNode} from '../store/node';
+import styled from "styled-components";
+import {Popconfirm, Button, Table, Spin} from "antd";
+import {actionDelNode} from "@/store/node";
 import xyue from '@/assets/xyue.png';
+import {actionGetNodes} from "@/store/node";
 
-const StyledList = styled(List)`
-    border-radius: 4px;
-    border: 1px solid #d9d9d9;
-    .ant-list-item {
-        padding-left: 16px;
-        padding-right: 16px;
-    }
+const StyledBg = styled.div`
+    height: 200px;
+    max-width: 1360px;
+    background: url(${xyue}) center no-repeat;
+    background-size: cover;
 `;
 
 class NodeList extends Component {
+
+    static prefetch(store) {
+        return store.dispatch(actionGetNodes());
+    }
+
+    state = {
+        columns: [{
+            dataIndex: 'data',
+            key: 'data',
+        }, {
+            dataIndex: 'id',
+            key: 'id',
+            width: 50,
+            render: (text, record) => (
+                <Popconfirm
+                    title="Are you sure to delete?"
+                    placement="topRight"
+                    okText="Yes"
+                    cancelText="No"
+                    onConfirm={this.props.delNode.bind(this, record.id)}>
+                    <Button size="small" type="dashed" shape="circle" icon="delete"/>
+                </Popconfirm>)
+        }]
+    }
+
+    componentDidMount() {
+        if (this.props.node.data.length === 0) {
+            this.props.getNodes();
+        }
+    }
+
     render = () =>
         <React.Fragment>
-            <img src={xyue} alt="xyue"/>
-            <StyledList
-                dataSource={this.props.data}
-                renderItem={(item, idx) => (
-                    <List.Item>{item}
-                        <Popconfirm
-                            title="Are you sure to delete?"
-                            placement="topLeft"
-                            okText="Yes"
-                            cancelText="No"
-                            onConfirm={this.props.delNode.bind(this, idx)}>
-                            <Button size="small">delete</Button>
-                        </Popconfirm>
-                    </List.Item>)}>
-            </StyledList>
+            <StyledBg/>
+            <Spin spinning={this.props.node.loading}>
+                <Table rowKey={record => record.id} columns={this.state.columns} showHeader={false} dataSource={this.props.node.data}/>
+            </Spin>
         </React.Fragment>
 }
 
-const mapStateToProps = state => ({data: state.node});
-const mapDispatchToProps = dispatch => ({delNode: idx => dispatch(actionDelNode(idx))});
+const mapStateToProps = state => ({node: state.node});
+const mapDispatchToProps = dispatch => ({
+    getNodes: () => dispatch(actionGetNodes()),
+    delNode: id => dispatch(actionDelNode(id))
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(NodeList);
