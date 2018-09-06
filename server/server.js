@@ -10,14 +10,13 @@ import Loadable from 'react-loadable';
 import {ServerStyleSheet} from 'styled-components';
 import createStore from '@/store';
 import {matchRoutes} from 'react-router-config';
-// import connectHistoryApiFallback from 'connect-history-api-fallback'
 
 const port = 9000;
 const app = express();
 const template = fs.readFileSync(path.join(__dirname, '../build/index.html'), 'utf8');
 
-// app.use('/static', express.static(path.join(__dirname, '../build/static')));
 app.use(express.static(path.resolve(__dirname, "../build")));
+// app.use('/static', express.static(path.join(__dirname, '../build/static')));
 app.get('/*', async (req, res, next) => {
     const context = {};
     const modules = [];
